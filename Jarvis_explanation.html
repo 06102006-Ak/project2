@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Jarvis — Voice-Activated Assistant</title>
+  <style>
+    body {margin:0;font-family: 'Segoe UI',sans-serif;line-height:1.6;background:linear-gradient(120deg,#0f2027,#203a43,#2c5364);color:#f1f5f9}
+    header {padding:60px 20px;text-align:center;color:white;background:rgba(0,0,0,0.3)}
+    header h1 {margin:0;font-size:2.5rem;color:#00d3ff}
+    header p {margin-top:10px;font-size:1.1rem;color:#cbd5e1}
+
+    main {max-width:900px;margin:auto;padding:40px 20px}
+    section {margin-bottom:40px}
+    h2 {color:#00d3ff;margin-bottom:12px;font-size:1.5rem}
+    .card {background:rgba(255,255,255,0.05);padding:20px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.3)}
+    ul {padding-left:20px}
+    li {margin-bottom:8px}
+    pre {background:#011627;color:#9be7ff;padding:15px;border-radius:8px;overflow:auto;font-size:0.9rem}
+
+    footer {text-align:center;padding:20px;color:#94a3b8;font-size:0.9rem;border-top:1px solid rgba(255,255,255,0.1)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Jarvis — Your Voice-Activated Virtual Assistant</h1>
+    <p>A Python-powered assistant that listens, understands, and responds to your commands.</p>
+  </header>
+
+  <main>
+    <section>
+      <h2> What is Jarvis?</h2>
+      <div class="card">
+        <p>Jarvis is a <strong>voice-activated assistant</strong> built in Python. It recognizes speech, executes tasks like opening websites, playing music, fetching news & weather, and even integrates with OpenAI for answering questions. Inspired by Iron Man’s J.A.R.V.I.S, it makes your computer interactive and smart.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2> Features</h2>
+      <div class="card">
+        <ul>
+          <li> Voice activation with the wake word <em>“Jarvis”</em></li>
+          <li> Open websites (Google, YouTube, IIIT Raichur)</li>
+          <li> Play songs from a custom music library</li>
+          <li> Fetch latest news using <strong>NewsAPI</strong></li>
+          <li> Live weather updates using <strong>WeatherAPI</strong></li>
+          <li> Tells current date and time</li>
+          <li> Handles general questions via <strong>OpenAI</strong></li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2> Technologies Used</h2>
+      <div class="card">
+        <ul>
+          <li><strong>Python</strong> — main programming language</li>
+          <li><strong>speech_recognition</strong> — converts speech to text</li>
+          <li><strong>pyttsx3</strong> — text-to-speech engine</li>
+          <li><strong>requests</strong> — API integration for weather & news</li>
+          <li><strong>webbrowser</strong> — opens websites</li>
+          <li><strong>OpenAI API</strong> — intelligent responses</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2> How It Works</h2>
+      <div class="card">
+        <ol>
+          <li>User says <em>“Jarvis”</em> to activate.</li>
+          <li>System listens for commands via microphone.</li>
+          <li>If the command matches known actions (like open Google, play music, or fetch weather), it executes directly.</li>
+          <li>If it's a question, Jarvis forwards it to <strong>OpenAI</strong> for an intelligent reply.</li>
+          <li>Responds back with both text and voice.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section>
+      <h2> Code Highlight</h2>
+      <div class="card">
+        <pre>
+if __name__ == "__main__":
+    speak("Initializing Jarvis...")
+    while True:
+        with sr.Microphone() as source:
+            print("Say 'Jarvis' to activate...")
+            audio = r.listen(source)
+        try:
+            wake_word = r.recognize_google(audio)
+            if wake_word.lower() == "jarvis":
+                speak("Jarvis is online.")
+                while True:
+                    command = listenForCommand()
+                    if command.lower() in ["exit","stop","shutdown","bye"]:
+                        speak("Goodbye!")
+                        exit()
+                    elif command:
+                        processCommand(command)
+        except sr.UnknownValueError:
+            continue
+        </pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 Jarvis Project - Sri Akshith Bhupathi
+  </footer>
+</body>
+</html>

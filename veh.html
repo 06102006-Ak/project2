@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Parking System — Project Showcase</title>
+  <style>
+    body {margin:0;font-family:'Segoe UI',sans-serif;background:linear-gradient(120deg,#1e3c72,#2a5298);color:#f8fafc;line-height:1.6}
+    header {padding:60px 20px;text-align:center;background:rgba(0,0,0,0.4)}
+    header h1 {margin:0;font-size:2.5rem;color:#ffdd57}
+    header p {margin-top:12px;font-size:1.1rem;color:#e2e8f0}
+
+    main {max-width:900px;margin:auto;padding:40px 20px}
+    section {margin-bottom:40px}
+    h2 {color:#ffdd57;margin-bottom:10px;font-size:1.6rem}
+    .card {background:rgba(255,255,255,0.06);padding:20px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.4)}
+    ul {padding-left:20px}
+    li {margin-bottom:8px}
+    pre {background:#0f172a;color:#9be7ff;padding:15px;border-radius:8px;overflow:auto;font-size:0.9rem}
+
+    footer {text-align:center;padding:20px;color:#cbd5e1;font-size:0.9rem;border-top:1px solid rgba(255,255,255,0.15)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1> Smart Parking System</h1>
+    <p>A C++ project that manages parking slots for cars and bikes with automated billing and status tracking.</p>
+  </header>
+
+  <main>
+    <section>
+      <h2> Project Overview</h2>
+      <div class="card">
+        <p>This project is a <strong>Smart Parking Management System</strong> built using <strong>C++</strong>. It helps automate vehicle parking in a limited number of slots, keeping track of cars and bikes, calculating parking fees based on duration, and displaying real-time parking status.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2> Features</h2>
+      <div class="card">
+        <ul>
+          <li>Dynamic slot allocation for cars and bikes.</li>
+          <li>Prevents overbooking when slots are full.</li>
+          <li>Vehicle removal with automatic billing (₹5 per minute).</li>
+          <li>Displays current parking status with vehicle details.</li>
+          <li>Menu-driven console interface for easy usage.</li>
+          <li>Uses <strong>OOP concepts</strong> like classes, inheritance, and polymorphism.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2> Technologies Used</h2>
+      <div class="card">
+        <ul>
+          <li><strong>C++</strong> — core programming language.</li>
+          <li><strong>STL Map</strong> — for storing slot and vehicle details.</li>
+          <li><strong>Classes & Inheritance</strong> — for Cars, Bikes, and generic Wheeler vehicles.</li>
+          <li><strong>ctime</strong> — to calculate entry and exit duration.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2> How It Works</h2>
+      <div class="card">
+        <ol>
+          <li>Admin enters total number of available slots.</li>
+          <li>User selects an option: Park, Remove, Display status, or Exit.</li>
+          <li>When parking, the system stores vehicle type, number, and entry time.</li>
+          <li>On removal, it calculates duration and charges ₹5 per minute.</li>
+          <li>Status option displays all occupied slots with vehicle details.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section>
+      <h2> Code Highlight</h2>
+      <div class="card">
+        <pre>
+class slotbooking {
+    int totalslots;
+    map<int, Wheeler*> slots;
+
+public:
+    slotbooking(int limit) { totalslots = limit; }
+
+    int parking(string num, string type) {
+        if (filled()) {
+            cout << "No slots available!";
+            return -1;
+        }
+        int cnt = 1;
+        while (slots.find(cnt) != slots.end()) cnt++;
+        if (type == "Car") slots[cnt] = new Car(num);
+        else if (type == "Bike") slots[cnt] = new Bike(num);
+        cout << "Vehicle parked at slot: " << cnt;
+        return cnt;
+    }
+
+    void remove(int cnt) {
+        Wheeler* v = slots[cnt];
+        double duration = difftime(time(0), v->entry)/60;
+        double fee = 5 * duration;
+        cout << "Pay: ₹" << fee;
+        delete v;
+        slots.erase(cnt);
+    }
+};
+        </pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 Smart Parking System Project — Designed with C++ and OOP Concepts
+  </footer>
+</body>
+</html>

@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Healthcare Chatbot</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url(https://plus.unsplash.com/premium_photo-1668898899024-02f028349666?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bWVkaWNhbCUyMGJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D);
+            /* Replace with your image path */
+            background-size: cover;
+            /* This will make the image cover the entire background */
+            background-position: center;
+            /* Center the image */
+            background-repeat: no-repeat;
+            /* Prevent the image from repeating */
+            background-attachment: fixed;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 85vh;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #007bff, #00b4ff);
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .chat-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            margin: 8px 0;
+            padding: 12px 15px;
+            border-radius: 12px;
+            max-width: 85%;
+            word-wrap: break-word;
+            line-height: 1.4;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot-message {
+            background: white;
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .chat-footer {
+            display: flex;
+            padding: 12px;
+            background: #fff;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .chat-footer input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.95em;
+            transition: border 0.3s;
+        }
+
+        .chat-footer input:focus {
+            border-color: #007bff;
+        }
+
+        .chat-footer button {
+            padding: 12px 18px;
+            margin-left: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .chat-footer button:hover {
+            background: #0056b3;
+        }
+
+        .typing-indicator {
+            display: flex;
+            padding: 8px 0;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #999;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingAnimation {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .disease-title {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+
+        .section-title {
+            font-weight: 600;
+            margin-top: 8px;
+            color: #555;
+        }
+
+        @media (max-width: 500px) {
+            .chat-container {
+                width: 95%;
+                height: 90vh;
+            }
+
+            .chat-header {
+                padding: 15px;
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="chat-header">Advanced Healthcare Assistant</div>
+        <div class="chat-body" id="chatBody">
+            <div class="message bot-message">
+                Hello! I'm your healthcare assistant. I can help with:<br>
+                • Symptom analysis<br>
+                • Disease prediction<br>
+                • First aid advice<br>
+                • Treatment recommendations<br><br>
+                Describe your symptoms (e.g., "I have fever and headache") or ask about specific conditions.
+            </div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="userInput" placeholder="Describe your symptoms..." autocomplete="off">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatBody = document.getElementById('chatBody');
+        const userInput = document.getElementById('userInput');
+
+        // Disease database with symptoms and treatments
+        const diseases = [
+            {
+        name: "Common Cold",
+                symptoms: ["runny nose", "sneezing", "nasal congestion", "sore throat", "cough", "mild fever (<100.4°F)", "fatigue"],
+                description: "Viral infection of the upper respiratory tract",
+                treatment: {
+                    selfCare: [
+                        "Rest and stay hydrated",
+                        "Use saline nasal spray/drops",
+                        "Gargle with warm salt water",
+                        "Use a humidifier"
+                    ],
+                    medications: [
+                        "Decongestants (pseudoephedrine)",
+                        "Antihistamines (loratadine, cetirizine)",
+                        "Pain relievers (acetaminophen, ibuprofen)",
+                        "Cough suppressants (dextromethorphan)"
+                    ],
+                    whenToSeeDoctor: "If symptoms last >10 days, fever >102°F, or difficulty breathing"
+                }
+            },
+            {
+                name: "Influenza (Flu)",
+                symptoms: ["high fever (100-104°F)", "chills", "muscle aches", "headache", "fatigue", "dry cough", "sore throat", "nasal congestion"],
+                description: "Viral respiratory infection more severe than common cold",
+                treatment: {
+                    selfCare: [
+                        "Bed rest and plenty of fluids",
+                        "Use a humidifier",
+                        "Warm compresses for muscle aches"
+                    ],
+                    medications: [
+                        "Antiviral drugs (oseltamivir, zanamivir) if started early",
+                        "Pain relievers (acetaminophen, ibuprofen)",
+                        "Decongestants (pseudoephedrine)"
+                    ],
+                    whenToSeeDoctor: "If difficulty breathing, persistent fever, or symptoms worsen after improving"
+                }
+            },
+            {
+                name: "Pneumonia",
+                symptoms: ["cough with phlegm", "fever (may be high)", "chills", "difficulty breathing", "chest pain", "fatigue", "sweating", "nausea"],
+                description: "Infection that inflames air sacs in one or both lungs",
+                treatment: {
+                    selfCare: [
+                        "Get plenty of rest",
+                        "Stay hydrated",
+                        "Use a humidifier",
+                        "Take steamy showers"
+                    ],
+                    medications: [
+                        "Antibiotics (for bacterial pneumonia)",
+                        "Antiviral medications (for viral)",
+                        "Cough medicine",
+                        "Fever reducers"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>Seek immediate care if breathing becomes difficult, lips/nails turn blue, or fever exceeds 103°F</span>"
+                }
+            },
+            {
+                name: "COVID-19",
+                symptoms: ["fever or chills", "cough", "shortness of breath", "fatigue", "muscle/body aches", "headache", "loss of taste/smell", "sore throat", "congestion", "nausea/vomiting", "diarrhea"],
+                description: "Respiratory illness caused by coronavirus",
+                treatment: {
+                    selfCare: [
+                        "Isolate from others",
+                        "Rest and stay hydrated",
+                        "Monitor oxygen levels if possible",
+                        "Use over-the-counter medications for symptoms"
+                    ],
+                    medications: [
+                        "Paxlovid (antiviral) for high-risk patients",
+                        "Pain relievers (acetaminophen preferred)",
+                        "Decongestants if needed"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>Seek emergency care if: trouble breathing, persistent chest pain, confusion, inability to stay awake, or pale/gray/blue skin/lips</span>"
+                }
+            },
+            {
+                name: "Strep Throat",
+                symptoms: ["severe sore throat", "pain when swallowing", "fever (>101°F)", "swollen lymph nodes", "white patches on tonsils", "headache", "nausea/vomiting (especially in children)"],
+                description: "Bacterial infection causing throat inflammation",
+                treatment: {
+                    selfCare: [
+                        "Warm salt water gargles",
+                        "Drink warm liquids",
+                        "Use throat lozenges",
+                        "Get plenty of rest"
+                    ],
+                    medications: [
+                        "Antibiotics (penicillin or amoxicillin)",
+                        "Pain relievers (acetaminophen, ibuprofen)"
+                    ],
+                    whenToSeeDoctor: "If symptoms suggest strep throat (requires antibiotic treatment)"
+                }
+            },
+            {
+                name: "Urinary Tract Infection (UTI)",
+                symptoms: ["burning during urination", "frequent urination", "urgent need to urinate", "cloudy urine", "pelvic pain (women)", "rectal pain (men)", "low-grade fever"],
+                description: "Infection in any part of the urinary system",
+                treatment: {
+                    selfCare: [
+                        "Drink plenty of water",
+                        "Avoid irritants like caffeine/alcohol",
+                        "Use heating pad for discomfort"
+                    ],
+                    medications: [
+                        "Antibiotics (trimethoprim, nitrofurantoin)",
+                        "Pain relievers (phenazopyridine for symptom relief)"
+                    ],
+                    whenToSeeDoctor: "If symptoms persist or you develop fever, back pain, or nausea"
+                }
+            },
+            {
+                name: "Sinusitis",
+                symptoms: ["facial pain/pressure", "nasal congestion", "thick nasal discharge", "loss of smell", "cough", "fatigue", "fever", "bad breath"],
+                description: "Inflammation of the sinuses",
+                treatment: {
+                    selfCare: [
+                        "Nasal irrigation with saline",
+                        "Warm compresses to face",
+                        "Stay hydrated",
+                        "Use humidifier"
+                    ],
+                    medications: [
+                        "Decongestants (pseudoephedrine)",
+                        "Nasal corticosteroids (fluticasone)",
+                        "Pain relievers",
+                        "Antibiotics if bacterial (amoxicillin)"
+                    ],
+                    whenToSeeDoctor: "If symptoms last >10 days, fever >102°F, or severe headache"
+                }
+            },
+            {
+                name: "Bronchitis",
+                symptoms: ["persistent cough (with/without mucus)", "fatigue", "shortness of breath", "mild fever/chills", "chest discomfort"],
+                description: "Inflammation of the bronchial tubes",
+                treatment: {
+                    selfCare: [
+                        "Increase fluid intake",
+                        "Use humidifier",
+                        "Get plenty of rest",
+                        "Honey for cough relief"
+                    ],
+                    medications: [
+                        "Cough suppressants (dextromethorphan)",
+                        "Bronchodilators if wheezing",
+                        "Pain relievers"
+                    ],
+                    whenToSeeDoctor: "If cough lasts >3 weeks, fever >100.4°F, or coughing up blood"
+                }
+            },
+            {
+                name: "Ear Infection (Otitis Media)",
+                symptoms: ["ear pain", "fever", "trouble sleeping", "fluid drainage from ear", "hearing difficulty", "loss of balance", "nausea/vomiting"],
+                description: "Infection of the middle ear",
+                treatment: {
+                    selfCare: [
+                        "Warm compress to affected ear",
+                        "Over-the-counter pain relievers",
+                        "Stay upright to help drainage"
+                    ],
+                    medications: [
+                        "Antibiotics (amoxicillin) if bacterial",
+                        "Pain relievers (acetaminophen, ibuprofen)"
+                    ],
+                    whenToSeeDoctor: "If symptoms last >2-3 days, severe pain, or fever >102°F"
+                }
+            },
+            {
+                name: "Conjunctivitis (Pink Eye)",
+                symptoms: ["redness in one/both eyes", "itchiness", "gritty feeling", "discharge forming crust", "tearing", "sensitivity to light"],
+                description: "Inflammation of the conjunctiva",
+                treatment: {
+                    selfCare: [
+                        "Apply warm compresses",
+                        "Clean eyelids with wet cloth",
+                        "Avoid wearing contacts",
+                        "Use artificial tears"
+                    ],
+                    medications: [
+                        "Antibiotic eye drops (if bacterial)",
+                        "Antihistamine eye drops (if allergic)"
+                    ],
+                    whenToSeeDoctor: "If severe pain, vision changes, or symptoms worsen after 2-3 days"
+                }
+            },
+            {
+                name: "Gastroenteritis (Stomach Flu)",
+                symptoms: ["watery diarrhea", "abdominal cramps", "nausea/vomiting", "low-grade fever", "headache", "muscle aches"],
+                description: "Inflammation of stomach and intestines",
+                treatment: {
+                    selfCare: [
+                        "Stay hydrated with clear fluids",
+                        "Follow BRAT diet (bananas, rice, applesauce, toast)",
+                        "Avoid dairy, fatty foods, caffeine",
+                        "Get plenty of rest"
+                    ],
+                    medications: [
+                        "Oral rehydration solutions",
+                        "Anti-diarrheal (loperamide) if needed",
+                        "Probiotics"
+                    ],
+                    whenToSeeDoctor: "If symptoms last >2 days, bloody stools, signs of dehydration, or fever >102°F"
+                }
+            },
+            {
+                name: "Food Poisoning",
+                symptoms: ["nausea", "vomiting", "watery diarrhea", "abdominal pain/cramps", "fever", "loss of appetite"],
+                description: "Illness from contaminated food",
+                treatment: {
+                    selfCare: [
+                        "Stay hydrated with small sips of water",
+                        "Gradually reintroduce bland foods",
+                        "Avoid anti-diarrheal meds initially"
+                    ],
+                    medications: [
+                        "Oral rehydration solutions",
+                        "Anti-nausea meds (if prescribed)",
+                        "Antibiotics in severe cases"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>Seek care if: bloody stools, high fever, signs of dehydration, or symptoms last >3 days</span>"
+                }
+            },
+            {
+                name: "Appendicitis",
+                symptoms: ["sudden pain starting near belly button moving to lower right", "loss of appetite", "nausea/vomiting", "fever", "abdominal swelling", "pain worsens with movement/coughing"],
+                description: "Inflammation of the appendix",
+                treatment: {
+                    selfCare: [
+                        "Nothing by mouth",
+                        "Avoid pain medications before evaluation"
+                    ],
+                    medications: [
+                        "IV antibiotics if diagnosed",
+                        "Pain control after diagnosis"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>EMERGENCY - Requires immediate medical attention. Do not delay care.</span>"
+                }
+            },
+            {
+                name: "Diverticulitis",
+                symptoms: ["abdominal pain (usually left side)", "fever", "nausea", "constipation or diarrhea", "bloating"],
+                description: "Infection/inflammation of pouches in colon",
+                treatment: {
+                    selfCare: [
+                        "Liquid diet initially",
+                        "Gradual return to high-fiber diet",
+                        "Apply heating pad for pain"
+                    ],
+                    medications: [
+                        "Antibiotics (ciprofloxacin, metronidazole)",
+                        "Pain relievers (avoid NSAIDs)"
+                    ],
+                    whenToSeeDoctor: "If severe pain, fever >101°F, or symptoms worsen"
+                }
+            },
+            {
+                name: "Gallstones",
+                symptoms: ["sudden/intense abdominal pain (upper right)", "back pain between shoulder blades", "right shoulder pain", "nausea/vomiting", "fever/chills if infected"],
+                description: "Hardened deposits in gallbladder",
+                treatment: {
+                    selfCare: [
+                        "Low-fat diet",
+                        "Maintain healthy weight",
+                        "Avoid rapid weight loss"
+                    ],
+                    medications: [
+                        "Pain control (prescription meds often needed)",
+                        "Ursodiol (for certain stones)"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>Seek immediate care if: severe pain lasting >5 hours, fever with chills, or yellow skin/eyes</span>"
+                }
+            },
+            {
+                name: "GERD (Acid Reflux)",
+                symptoms: ["heartburn", "regurgitation", "chest pain", "difficulty swallowing", "chronic cough", "sore throat", "feeling of lump in throat"],
+                description: "Chronic acid reflux disease",
+                treatment: {
+                    selfCare: [
+                        "Avoid trigger foods (spicy, fatty, acidic)",
+                        "Eat smaller meals",
+                        "Don't lie down after eating",
+                        "Elevate head of bed"
+                    ],
+                    medications: [
+                        "Antacids (Tums, Rolaids)",
+                        "H2 blockers (famotidine)",
+                        "PPIs (omeprazole, esomeprazole)"
+                    ],
+                    whenToSeeDoctor: "If symptoms occur >2x/week, worsen, or include weight loss/difficulty swallowing"
+                }
+            },
+            {
+                name: "Peptic Ulcer",
+                symptoms: ["burning stomach pain", "bloating", "heartburn", "nausea", "intolerance to fatty foods", "dark stools (if bleeding)"],
+                description: "Sores in stomach lining or small intestine",
+                treatment: {
+                    selfCare: [
+                        "Avoid NSAIDs",
+                        "Limit alcohol",
+                        "Manage stress",
+                        "Avoid spicy foods if they worsen symptoms"
+                    ],
+                    medications: [
+                        "PPIs (omeprazole, pantoprazole)",
+                        "Antibiotics if H. pylori present",
+                        "Antacids"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>Seek immediate care if: severe pain, vomiting blood, or black/tarry stools</span>"
+                }
+            },
+            {
+                name: "Irritable Bowel Syndrome (IBS)",
+                symptoms: ["abdominal pain/cramping", "bloating", "gas", "diarrhea or constipation", "mucus in stool"],
+                description: "Chronic digestive disorder",
+                treatment: {
+                    selfCare: [
+                        "High-fiber diet (for constipation)",
+                        "Low-FODMAP diet trial",
+                        "Regular exercise",
+                        "Stress management"
+                    ],
+                    medications: [
+                        "Fiber supplements",
+                        "Laxatives (for constipation)",
+                        "Anti-diarrheals (for diarrhea)",
+                        "Antispasmodics"
+                    ],
+                    whenToSeeDoctor: "If symptoms are severe or include weight loss, rectal bleeding, or persistent pain"
+                }
+            },
+            {
+                name: "Inflammatory Bowel Disease (IBD)",
+                symptoms: ["persistent diarrhea", "abdominal pain", "rectal bleeding", "urgent bowel movements", "weight loss", "fatigue", "fever"],
+                description: "Chronic inflammation of digestive tract (Crohn's/Ulcerative Colitis)",
+                treatment: {
+                    selfCare: [
+                        "Nutritional support",
+                        "Stress reduction",
+                        "Keep food diary to identify triggers"
+                    ],
+                    medications: [
+                        "Anti-inflammatory drugs (mesalamine)",
+                        "Immunosuppressants",
+                        "Biologics",
+                        "Antidiarrheals"
+                    ],
+                    whenToSeeDoctor: "For diagnosis and ongoing management of this chronic condition"
+                }
+            },
+            {
+                name: "Fever (Pyrexia)",
+                symptoms: ["elevated body temperature (>100.4°F)", "chills", "sweating", "headache", "muscle aches", "dehydration"],
+                description: "Body's response to infection or illness",
+                treatment: {
+                    selfCare: [
+                        "Stay hydrated with water, broth, or electrolyte solutions",
+                        "Rest in a cool environment",
+                        "Use light clothing and blankets",
+                        "Take lukewarm sponge baths if needed"
+                    ],
+                    medications: [
+                        "Acetaminophen (Tylenol) every 4-6 hours",
+                        "Ibuprofen (Advil, Motrin) every 6-8 hours",
+                        "Aspirin (for adults only)"
+                    ],
+                    whenToSeeDoctor: "If fever >103°F (39.4°C), lasts >3 days, or is accompanied by rash, stiff neck, confusion, or difficulty breathing"
+                }
+            },
+            {
+                name: "Hypertension (High Blood Pressure)",
+                symptoms: ["often asymptomatic", "headaches", "shortness of breath", "nosebleeds", "dizziness", "flushing", "vision changes"],
+                description: "Elevated blood pressure (>130/80 mmHg)",
+                treatment: {
+                    selfCare: [
+                        "Reduce sodium intake",
+                        "Regular exercise",
+                        "Maintain healthy weight",
+                        "Limit alcohol",
+                        "Stress management"
+                    ],
+                    medications: [
+                        "ACE inhibitors",
+                        "ARBs",
+                        "Calcium channel blockers",
+                        "Diuretics"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>Seek emergency care if: severe headache, chest pain, severe anxiety, or BP >180/120</span>"
+                }
+            },
+            {
+                name: "Heart Attack (Myocardial Infarction)",
+                symptoms: ["chest pressure/squeezing", "pain radiating to arm/jaw", "shortness of breath", "cold sweat", "nausea", "lightheadedness", "fatigue"],
+                description: "Blockage of blood flow to heart muscle",
+                treatment: {
+                    selfCare: [
+                        "Call emergency services immediately",
+                        "Chew aspirin (if not allergic)",
+                        "Stay calm and rest while waiting for help"
+                    ],
+                    medications: [
+                        "Emergency: Thrombolytics, nitroglycerin",
+                        "Long-term: Beta blockers, statins, aspirin"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>EMERGENCY - Call 911 immediately for any suspected heart attack symptoms</span>"
+                }
+            },
+            {
+                name: "Angina",
+                symptoms: ["chest pain/pressure", "pain in arms/neck/jaw/shoulder", "fatigue", "shortness of breath", "sweating", "dizziness"],
+                description: "Reduced blood flow to heart muscle",
+                treatment: {
+                    selfCare: [
+                        "Stop activity and rest",
+                        "Use prescribed nitroglycerin",
+                        "Avoid triggers (cold weather, heavy meals)"
+                    ],
+                    medications: [
+                        "Nitrates (nitroglycerin)",
+                        "Beta blockers",
+                        "Calcium channel blockers",
+                        "Statins"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>Call 911 if: pain lasts >15 minutes, is severe, or resembles heart attack symptoms</span>"
+                }
+            },
+            {
+                name: "Heart Failure",
+                symptoms: ["shortness of breath", "fatigue", "swelling in legs/ankles", "rapid weight gain", "persistent cough", "increased urination at night"],
+                description: "Heart's inability to pump effectively",
+                treatment: {
+                    selfCare: [
+                        "Monitor weight daily",
+                        "Limit salt/fluid intake",
+                        "Elevate legs when sitting",
+                        "Regular light exercise as tolerated"
+                    ],
+                    medications: [
+                        "Diuretics",
+                        "ACE inhibitors/ARBs",
+                        "Beta blockers",
+                        "Digoxin"
+                    ],
+                    whenToSeeDoctor: "If weight gain >3 lbs in 1 day or >5 lbs in 1 week, worsening shortness of breath, or increased swelling"
+                }
+            },
+            {
+                name: "Arrhythmia",
+                symptoms: ["palpitations", "racing/slow heartbeat", "chest discomfort", "shortness of breath", "dizziness", "fainting"],
+                description: "Irregular heart rhythm",
+                treatment: {
+                    selfCare: [
+                        "Avoid caffeine/alcohol",
+                        "Manage stress",
+                        "Monitor pulse regularly"
+                    ],
+                    medications: [
+                        "Beta blockers",
+                        "Calcium channel blockers",
+                        "Anti-arrhythmics"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>Seek immediate care if: chest pain, fainting, severe shortness of breath, or rapid irregular pulse</span>"
+                }
+            },
+            {
+                name: "Stroke",
+                symptoms: ["sudden numbness (face/arm/leg)", "confusion/trouble speaking", "vision problems", "walking difficulty", "severe headache"],
+                description: "Interruption of blood supply to brain",
+                treatment: {
+                    selfCare: [
+                        "Call emergency services immediately",
+                        "Note time symptoms started",
+                        "Do NOT give aspirin"
+                    ],
+                    medications: [
+                        "Emergency: tPA if ischemic stroke",
+                        "Long-term: Antiplatelets, anticoagulants"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>EMERGENCY - Every minute counts. Use FAST: Face drooping, Arm weakness, Speech difficulty, Time to call 911</span>"
+                }
+            },
+            {
+                name: "TIA (Mini-Stroke)",
+                symptoms: ["stroke-like symptoms lasting <24 hours", "temporary weakness/numbness", "brief speech/vision problems", "dizziness"],
+                description: "Temporary blockage of blood flow to brain",
+                treatment: {
+                    selfCare: [
+                        "Call emergency services immediately",
+                        "Follow up urgently even if symptoms resolve"
+                    ],
+                    medications: [
+                        "Antiplatelets (aspirin, clopidogrel)",
+                        "Anticoagulants if atrial fibrillation"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>EMERGENCY - Requires immediate evaluation to prevent full stroke</span>"
+                }
+            },
+            {
+                name: "Deep Vein Thrombosis (DVT)",
+                symptoms: ["leg swelling", "leg pain/tenderness", "red/discolored skin", "warmth over affected area"],
+                description: "Blood clot in deep vein (usually leg)",
+                treatment: {
+                    selfCare: [
+                        "Elevate leg",
+                        "Wear compression stockings",
+                        "Stay mobile when possible"
+                    ],
+                    medications: [
+                        "Anticoagulants (heparin, warfarin, DOACs)"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>Seek immediate care if: chest pain, shortness of breath (possible pulmonary embolism)</span>"
+                }
+            },
+            {
+                name: "Pulmonary Embolism",
+                symptoms: ["sudden shortness of breath", "chest pain (worse with breathing)", "cough (may produce blood)", "rapid heart rate", "lightheadedness"],
+                description: "Blood clot in lungs",
+                treatment: {
+                    selfCare: [
+                        "Call emergency services immediately",
+                        "Remain calm and still"
+                    ],
+                    medications: [
+                        "Anticoagulants",
+                        "Thrombolytics in severe cases"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>EMERGENCY - Life-threatening condition requiring immediate treatment</span>"
+                }
+            },
+            {
+                name: "Asthma",
+                symptoms: ["wheezing", "shortness of breath", "chest tightness", "coughing (especially at night)", "difficulty breathing"],
+                description: "Chronic inflammatory airway disease",
+                treatment: {
+                    selfCare: [
+                        "Identify/avoid triggers",
+                        "Use air purifier",
+                        "Practice breathing exercises"
+                    ],
+                    medications: [
+                        "Inhaled corticosteroids",
+                        "Bronchodilators (albuterol)",
+                        "Leukotriene modifiers"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>Seek emergency care if: severe shortness of breath, inability to speak, or lips/nails turning blue</span>"
+                }
+            },
+            {
+                name: "COPD",
+                symptoms: ["chronic cough", "shortness of breath", "wheezing", "chest tightness", "frequent respiratory infections", "fatigue"],
+                description: "Chronic obstructive pulmonary disease",
+                treatment: {
+                    selfCare: [
+                        "Stop smoking immediately",
+                        "Avoid air pollutants",
+                        "Pursed-lip breathing technique",
+                        "Stay active as tolerated"
+                    ],
+                    medications: [
+                        "Bronchodilators",
+                        "Inhaled corticosteroids",
+                        "Oxygen therapy in advanced cases"
+                    ],
+                    whenToSeeDoctor: "If symptoms worsen suddenly, increased cough/sputum, or fever develops"
+                }
+            },
+            {
+                name: "Pneumothorax (Collapsed Lung)",
+                symptoms: ["sudden chest pain", "shortness of breath", "dry cough", "fatigue", "rapid heart rate", "cyanosis (late sign)"],
+                description: "Air in chest cavity causing lung collapse",
+                treatment: {
+                    selfCare: [
+                        "Seek emergency care immediately",
+                        "Remain calm and still"
+                    ],
+                    medications: [
+                        "Oxygen therapy",
+                        "Pain control"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>EMERGENCY - Requires immediate medical attention</span>"
+                }
+            },
+            {
+                name: "Diabetes (Type 2)",
+                symptoms: ["increased thirst", "frequent urination", "hunger", "fatigue", "blurred vision", "slow-healing sores", "frequent infections"],
+                description: "Chronic condition affecting blood sugar regulation",
+                treatment: {
+                    selfCare: [
+                        "Healthy diet (low glycemic index)",
+                        "Regular exercise",
+                        "Weight management",
+                        "Foot care"
+                    ],
+                    medications: [
+                        "Metformin",
+                        "Sulfonylureas",
+                        "Insulin (in some cases)"
+                    ],
+                    whenToSeeDoctor: "If blood sugar consistently high (>300 mg/dL) or symptoms of hyperglycemia (excessive thirst/urination) or hypoglycemia (shaking, confusion)"
+                }
+            },
+            {
+                name: "Hypothyroidism",
+                symptoms: ["fatigue", "weight gain", "cold intolerance", "dry skin", "constipation", "muscle weakness", "depression", "bradycardia"],
+                description: "Underactive thyroid gland",
+                treatment: {
+                    selfCare: [
+                        "Balanced diet with adequate iodine",
+                        "Regular exercise",
+                        "Stress management"
+                    ],
+                    medications: [
+                        "Levothyroxine (thyroid hormone replacement)"
+                    ],
+                    whenToSeeDoctor: "For diagnosis and ongoing management of this chronic condition"
+                }
+            },
+            {
+                name: "Hyperthyroidism",
+                symptoms: ["weight loss", "rapid heartbeat", "heat intolerance", "sweating", "tremors", "anxiety", "fatigue", "frequent bowel movements"],
+                description: "Overactive thyroid gland",
+                treatment: {
+                    selfCare: [
+                        "Avoid caffeine",
+                        "Manage stress",
+                        "Eye protection if Graves' disease"
+                    ],
+                    medications: [
+                        "Anti-thyroid drugs (methimazole)",
+                        "Beta blockers for symptoms",
+                        "Radioactive iodine therapy"
+                    ],
+                    whenToSeeDoctor: "If experiencing heart palpitations, significant weight loss, or eye problems"
+                }
+            },
+            {
+                name: "Migraine",
+                symptoms: ["throbbing headache (often one side)", "sensitivity to light/sound", "nausea/vomiting", "aura (visual disturbances)", "dizziness"],
+                description: "Neurological condition causing severe headaches",
+                treatment: {
+                    selfCare: [
+                        "Rest in dark, quiet room",
+                        "Cold compress to head/neck",
+                        "Stay hydrated",
+                        "Identify/avoid triggers"
+                    ],
+                    medications: [
+                        "Pain relievers (NSAIDs)",
+                        "Triptans",
+                        "Anti-nausea medications",
+                        "Preventive medications if frequent"
+                    ],
+                    whenToSeeDoctor: "If headaches are severe, change in pattern, or don't respond to usual treatment"
+                }
+            },
+            {
+                name: "Tension Headache",
+                symptoms: ["dull, aching head pain", "sensation of tightness around forehead", "tenderness in scalp/neck muscles", "mild light/sound sensitivity"],
+                description: "Common headache from muscle tension",
+                treatment: {
+                    selfCare: [
+                        "Relaxation techniques",
+                        "Neck/shoulder stretches",
+                        "Warm compress to neck",
+                        "Improve posture"
+                    ],
+                    medications: [
+                        "Acetaminophen",
+                        "NSAIDs (ibuprofen, naproxen)"
+                    ],
+                    whenToSeeDoctor: "If headaches become frequent, severe, or don't respond to OTC meds"
+                }
+            },
+            {
+                name: "Cluster Headache",
+                symptoms: ["severe pain around one eye", "tearing/redness of eye", "nasal congestion", "restlessness", "pain lasts 15min-3hrs", "occurs in cyclical patterns"],
+                description: "Very painful headaches occurring in clusters",
+                treatment: {
+                    selfCare: [
+                        "Avoid alcohol during cluster periods",
+                        "High-flow oxygen during attack (if prescribed)",
+                        "Maintain regular sleep schedule"
+                    ],
+                    medications: [
+                        "Triptan injections",
+                        "Oxygen therapy",
+                        "Preventive medications"
+                    ],
+                    whenToSeeDoctor: "For diagnosis and management of this severe condition"
+                }
+            },
+            {
+                name: "Meningitis",
+                symptoms: ["sudden high fever", "stiff neck", "severe headache", "nausea/vomiting", "confusion", "seizures", "sensitivity to light"],
+                description: "Inflammation of brain/spinal cord membranes",
+                treatment: {
+                    selfCare: [
+                        "Seek emergency care immediately",
+                        "Keep hydrated if able"
+                    ],
+                    medications: [
+                        "IV antibiotics (bacterial)",
+                        "Antivirals (viral)",
+                        "Steroids",
+                        "Pain control"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>EMERGENCY - Requires immediate medical attention. Bacterial meningitis is life-threatening.</span>"
+                }
+            },
+            {
+                name: "Encephalitis",
+                symptoms: ["fever", "headache", "confusion", "seizures", "personality changes", "speech/movement problems", "hallucinations"],
+                description: "Brain inflammation",
+                treatment: {
+                    selfCare: [
+                        "Seek emergency care immediately",
+                        "Keep airway protected if seizures occur"
+                    ],
+                    medications: [
+                        "Antivirals (if viral)",
+                        "Immunosuppressants (if autoimmune)",
+                        "Anti-seizure medications"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>EMERGENCY - Requires immediate hospitalization</span>"
+                }
+            },
+            {
+                name: "Epilepsy",
+                symptoms: ["recurrent seizures", "temporary confusion", "staring spells", "uncontrollable jerking", "loss of consciousness"],
+                description: "Neurological disorder with recurrent seizures",
+                treatment: {
+                    selfCare: [
+                        "Take medications regularly",
+                        "Get adequate sleep",
+                        "Avoid seizure triggers",
+                        "Wear medical alert bracelet"
+                    ],
+                    medications: [
+                        "Anti-seizure drugs (levetiracetam, lamotrigine, etc.)"
+                    ],
+                    whenToSeeDoctor: "<span class='emergency-warning'>Call 911 if: seizure lasts >5 minutes, multiple seizures occur, or injury occurs during seizure</span>"
+                }
+            }
+        ];
+
+        
+        // Symptom to disease mapping with weights
+        const symptomWeights = {
+            "runny nose": { "Common Cold": 0.8, "Allergic Rhinitis": 0.9, "Influenza (Flu)": 0.4 },
+            "sneezing": { "Common Cold": 0.7, "Allergic Rhinitis": 0.95 },
+            "congestion": { "Common Cold": 0.8, "Allergic Rhinitis": 0.85, "Influenza (Flu)": 0.5 },
+            "sore throat": { "Common Cold": 0.7, "Influenza (Flu)": 0.6, "Pneumonia": 0.3 },
+            "cough": { "Common Cold": 0.6, "Influenza (Flu)": 0.7, "Asthma": 0.8, "Pneumonia": 0.9 },
+            "mild fever": { "Common Cold": 0.5, "Influenza (Flu)": 0.9, "Pneumonia": 0.7 },
+            "high fever": { "Influenza (Flu)": 0.95, "Pneumonia": 0.85, "Urinary Tract Infection (UTI)": 0.4 },
+            "muscle aches": { "Influenza (Flu)": 0.9, "Common Cold": 0.4 },
+            "chills": { "Influenza (Flu)": 0.8, "Pneumonia": 0.7, "Urinary Tract Infection (UTI)": 0.5 },
+            "headache": { "Influenza (Flu)": 0.7, "Migraine": 0.9, "Hypertension": 0.5 },
+            "fatigue": { "Influenza (Flu)": 0.8, "Anemia": 0.9, "Depression": 0.85, "Diabetes Mellitus": 0.6 },
+            "dry cough": { "Influenza (Flu)": 0.7, "Asthma": 0.6 },
+            "itchy nose": { "Allergic Rhinitis": 0.95 },
+            "itchy watery eyes": { "Allergic Rhinitis": 0.9 },
+            "throbbing headache": { "Migraine": 0.95, "Hypertension": 0.6 },
+            "sensitivity to light": { "Migraine": 0.9 },
+            "nausea": { "Migraine": 0.7, "Gastroenteritis": 0.9, "Influenza (Flu)": 0.5 },
+            "vomiting": { "Migraine": 0.6, "Gastroenteritis": 0.95 },
+            "aura": { "Migraine": 0.85 },
+            "dizziness": { "Migraine": 0.5, "Hypertension": 0.7, "Anemia": 0.8 },
+            "diarrhea": { "Gastroenteritis": 0.95 },
+            "abdominal cramps": { "Gastroenteritis": 0.9, "Urinary Tract Infection (UTI)": 0.4 },
+            "burning urination": { "Urinary Tract Infection (UTI)": 0.95 },
+            "frequent urination": { "Urinary Tract Infection (UTI)": 0.8, "Diabetes Mellitus": 0.9 },
+            "cloudy urine": { "Urinary Tract Infection (UTI)": 0.85 },
+            "pelvic pain": { "Urinary Tract Infection (UTI)": 0.7 },
+            "blurred vision": { "Hypertension": 0.6, "Diabetes Mellitus": 0.8, "Migraine": 0.5 },
+            "shortness of breath": { "Asthma": 0.9, "Hypertension": 0.5, "Anemia": 0.7, "Pneumonia": 0.8 },
+            "nosebleeds": { "Hypertension": 0.6 },
+            "increased thirst": { "Diabetes Mellitus": 0.9 },
+            "hunger": { "Diabetes Mellitus": 0.8 },
+            "slow healing": { "Diabetes Mellitus": 0.7 },
+            "wheezing": { "Asthma": 0.95 },
+            "chest tightness": { "Asthma": 0.9, "Pneumonia": 0.5 },
+            "difficulty breathing": { "Asthma": 0.95, "Pneumonia": 0.9 },
+            "persistent sadness": { "Depression": 0.9 },
+            "loss of interest": { "Depression": 0.95 },
+            "sleep changes": { "Depression": 0.8, "Anemia": 0.4 },
+            "appetite changes": { "Depression": 0.8, "Diabetes Mellitus": 0.5 },
+            "concentration problems": { "Depression": 0.7, "Anemia": 0.5 },
+            "weakness": { "Anemia": 0.9, "Diabetes Mellitus": 0.5 },
+            "pale skin": { "Anemia": 0.85 },
+            "cold hands/feet": { "Anemia": 0.7 },
+            "cough with phlegm": { "Pneumonia": 0.9, "Common Cold": 0.4 },
+            "chest pain": { "Pneumonia": 0.7, "Asthma": 0.5 },
+            "joint pain": { "Osteoarthritis": 0.95 },
+            "stiffness": { "Osteoarthritis": 0.9 },
+            "tenderness": { "Osteoarthritis": 0.85 },
+            "loss of flexibility": { "Osteoarthritis": 0.8 },
+            "grating sensation": { "Osteoarthritis": 0.75 },
+            "bone spurs": { "Osteoarthritis": 0.7 }
+        };
+
+        // Function to show typing indicator
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            chatBody.appendChild(typingDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // Function to hide typing indicator
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Handle sending a message
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, 'user');
+            userInput.value = '';
+
+            // Process after a short delay to simulate thinking
+            showTypingIndicator();
+            setTimeout(() => {
+                hideTypingIndicator();
+                processUserInput(message.toLowerCase());
+            }, 1000 + Math.random() * 1500); // Random delay between 1-2.5 seconds
+        }
+
+        // Add a message to the chat
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+
+            if (sender === 'bot' && text.includes('<div class="disease-title">')) {
+                messageDiv.innerHTML = text;
+            } else {
+                messageDiv.textContent = text;
+            }
+
+            chatBody.appendChild(messageDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // Process user input and generate response
+        function processUserInput(input) {
+            // Check for greetings
+            if (/(hello|hi|hey)/.test(input)) {
+                addMessage("Hello! How can I help you with your health concerns today?", 'bot');
+                return;
+            }
+
+            // Check for thanks
+            if (/(thanks|thank you|appreciate)/.test(input)) {
+                addMessage("You're welcome! Let me know if you have any other health questions.", 'bot');
+                return;
+            }
+
+            // Check for exit
+            if (/(bye|goodbye|exit)/.test(input)) {
+                addMessage("Goodbye! Take care of your health and don't hesitate to return if you have more questions.", 'bot');
+                return;
+            }
+
+            // Check for help request
+            if (/(help|what can you do)/.test(input)) {
+                addMessage("I can help with:\n• Symptom analysis\n• Disease prediction based on symptoms\n• Treatment recommendations\n• First aid advice\n\nTry describing your symptoms (e.g., 'I have fever and headache') or ask about specific conditions.", 'bot');
+                return;
+            }
+
+            // Extract symptoms from input
+            const foundSymptoms = [];
+            for (const symptom in symptomWeights) {
+                if (input.includes(symptom.toLowerCase())) {
+                    foundSymptoms.push(symptom);
+                }
+            }
+
+            if (foundSymptoms.length > 0) {
+                // Predict possible diseases
+                const predictedDiseases = predictDiseases(foundSymptoms);
+
+                if (predictedDiseases.length > 0) {
+                    // Show top 3 predictions
+                    let response = `<div class="disease-title">Based on your symptoms (${foundSymptoms.join(', ')}), these conditions are possible:</div><br>`;
+
+                    for (let i = 0; i < Math.min(3, predictedDiseases.length); i++) {
+                        const disease = diseases.find(d => d.name === predictedDiseases[i].name);
+                        response += formatDiseaseResponse(disease);
+
+                        if (i < Math.min(3, predictedDiseases.length) - 1) {
+                            response += "<br>";
+                        }
+                    }
+
+                    response += "<br>This is not a diagnosis. Please consult a healthcare professional for accurate assessment.";
+                    addMessage(response, 'bot');
+                } else {
+                    addMessage("I couldn't find any matching conditions for your symptoms. Please try describing them differently or consult a doctor.", 'bot');
+                }
+            } else {
+                // Check if asking about specific disease
+                const mentionedDisease = diseases.find(disease =>
+                    input.includes(disease.name.toLowerCase()) ||
+                    disease.name.toLowerCase().includes(input)
+                );
+
+                if (mentionedDisease) {
+                    addMessage(formatDiseaseResponse(mentionedDisease), 'bot');
+                } else {
+                    addMessage("I'm not sure I understand. Could you describe your symptoms in more detail? For example: 'I have headache and fever' or 'What are the symptoms of flu?'", 'bot');
+                }
+            }
+        }
+
+        // Format disease information for display
+        function formatDiseaseResponse(disease) {
+            let response = `<div class="disease-title">${disease.name}</div>`;
+            response += `<div>${disease.description}</div>`;
+
+            response += `<div class="section-title">Common Symptoms:</div>`;
+            response += `<div>• ${disease.symptoms.join('<br>• ')}</div>`;
+
+            response += `<div class="section-title">Self-care Measures:</div>`;
+            response += `<div>• ${disease.treatment.selfCare.join('<br>• ')}</div>`;
+
+            response += `<div class="section-title">Possible Medications:</div>`;
+            response += `<div>• ${disease.treatment.medications.join('<br>• ')}</div>`;
+
+            response += `<div class="section-title">When to See a Doctor:</div>`;
+            response += `<div>${disease.treatment.whenToSeeDoctor}</div>`;
+
+            return response;
+        }
+
+        // Predict diseases based on symptoms
+        function predictDiseases(symptoms) {
+            const diseaseScores = {};
+
+            // Calculate scores for each disease based on symptom weights
+            symptoms.forEach(symptom => {
+                for (const disease in symptomWeights[symptom]) {
+                    if (!diseaseScores[disease]) {
+                        diseaseScores[disease] = 0;
+                    }
+                    diseaseScores[disease] += symptomWeights[symptom][disease];
+                }
+            });
+
+            // Convert to array and sort by score
+            const sortedDiseases = Object.keys(diseaseScores).map(name => ({
+                name,
+                score: diseaseScores[name]
+            })).sort((a, b) => b.score - a.score);
+
+            return sortedDiseases;
+        }
+
+        // Allow sending message with Enter key
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+
+</html> 
